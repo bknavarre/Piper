@@ -1,7 +1,8 @@
 import React,{useEffect,useMemo,useRef,useState}from'react';
 import{AlertTriangle,ArrowLeft,CalendarDays,Camera,Check,ChevronLeft,ChevronRight,Circle,Compass,Edit3,ExternalLink,Heart,Home,Image as ImageIcon,Package,Plus,Search,Settings,ShoppingCart,Store,Trash2,Upload,UserRound,WalletCards,X}from'lucide-react';
+import{scrapeRecipe}from'./recipeScraper';
 type Page='recipes'|'planner'|'grocery'|'pantry'|'discover'|'prefs';type StoreName=string;
-type Recipe={id:string;title:string;image:string;servings:number;favorite:boolean;ingredients:string[];instructions:string[];allergens:string[];tags:string[];time:number;sourceName?:string;sourceUrl?:string};
+type Recipe={id:string;title:string;image:string;servings:number;favorite:boolean;ingredients:string[];instructions:string[];allergens:string[];tags:string[];time:number;sourceName?:string;sourceUrl?:string;notes?:string;description?:string};
 type Grocery={id:string;name:string;qty:string;category:string;aisle:string;price:number;store:StoreName;checked:boolean;source?:string};
 type Pantry={id:string;name:string;category:string;inStock:boolean;store:StoreName;price:number};
 type Prefs={allergies:string[];dislikes:string[];household:number;stores:string[];name:string;zip:string;budget:number;community:boolean;photo:string;recipeSources:string[];cookingGoals:string[];tourCompleted:boolean};
