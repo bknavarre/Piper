@@ -1,0 +1,1 @@
+Firestore fix: recipe/state payloads are sanitized to remove undefined values before writes, and Firestore is initialized with ignoreUndefinedProperties=true. This fixes imports where optional fields such as sourceUrl, notes, or description are missing.

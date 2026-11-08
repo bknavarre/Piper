@@ -4,9 +4,10 @@ import {db} from './firebase';
 export type SyncRecipe={id:string;image?:string;[key:string]:unknown};
 export type CloudState={prefs?:unknown;plan?:unknown;groceries?:unknown;pantry?:unknown;onboarded?:boolean;budget?:number};
 
+const stripUndefined=<T,>(value:T):T=>JSON.parse(JSON.stringify(value));
 const cleanRecipe=(recipe:SyncRecipe)=>{
   const localPhoto=typeof recipe.image==='string'&&recipe.image.startsWith('data:');
-  return {...recipe,image:localPhoto?'':recipe.image||'',photoSync:localPhoto?'local-only':'cloud-url',updatedAt:Date.now()};
+  return stripUndefined({...recipe,image:localPhoto?'':recipe.image||'',photoSync:localPhoto?'local-only':'cloud-url',updatedAt:Date.now()});
 };
 export const recipeFingerprint=(r:SyncRecipe)=>JSON.stringify(cleanRecipe(r),Object.keys(cleanRecipe(r)).sort());
 
@@ -17,7 +18,7 @@ export async function loadCloud(uid:string){
 }
 
 export async function saveCloudState(uid:string,state:CloudState){
-  await setDoc(doc(db,'users',uid,'state','main'),{...state,updatedAt:Date.now()},{merge:true});
+  await setDoc(doc(db,'users',uid,'state','main'),stripUndefined({...state,updatedAt:Date.now()}),{merge:true});
 }
 
 export async function syncChangedRecipes(uid:string,recipes:SyncRecipe[],knownIds:Set<string>,knownHashes:Map<string,string>){
