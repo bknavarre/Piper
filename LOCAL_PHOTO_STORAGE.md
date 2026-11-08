@@ -1,0 +1,2 @@
+# Local imported-photo storage
+Copy Me That photos are compressed during import and stored in browser IndexedDB (`piper-local-photos`), keyed by recipe ID. Recipe text/metadata syncs to Firestore. Base64 photo data is intentionally omitted from localStorage and Firestore to avoid storage/document-size limits. On app startup and after cloud recipe load, Piper rehydrates each recipe image from IndexedDB. Deleting a recipe also deletes its local photo.
