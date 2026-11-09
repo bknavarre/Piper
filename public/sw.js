@@ -1,1 +1,15 @@
-const CACHE='piper-grocery-remove-v1';self.addEventListener('install',()=>self.skipWaiting());self.addEventListener('activate',e=>e.waitUntil(Promise.all([self.clients.claim(),caches.keys().then(k=>Promise.all(k.filter(x=>x!==CACHE).map(x=>caches.delete(x))))])));self.addEventListener('fetch',e=>{const r=e.request,u=new URL(r.url);if(r.method!=='GET'||!['http:','https:'].includes(u.protocol))return;if(r.mode==='navigate'){e.respondWith(fetch(r));return}e.respondWith(fetch(r).then(x=>{const y=x.clone();caches.open(CACHE).then(c=>c.put(r,y));return x}).catch(()=>caches.match(r)))})
+const CACHE='piper-icon-refresh-20261108-2358';
+self.addEventListener('install',()=>self.skipWaiting());
+self.addEventListener('activate',event=>event.waitUntil(Promise.all([
+  self.clients.claim(),
+  caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))
+])));
+self.addEventListener('fetch',event=>{
+  const request=event.request,url=new URL(request.url);
+  if(request.method!=='GET'||!['http:','https:'].includes(url.protocol))return;
+  if(/manifest-.*\.webmanifest$/.test(url.pathname)||/\/icons\/.*\.(png|webp|svg)$/.test(url.pathname)){
+    event.respondWith(fetch(request,{cache:'reload'}));return;
+  }
+  if(request.mode==='navigate'){event.respondWith(fetch(request));return;}
+  event.respondWith(fetch(request).then(response=>{const copy=response.clone();caches.open(CACHE).then(cache=>cache.put(request,copy));return response}).catch(()=>caches.match(request)));
+});
