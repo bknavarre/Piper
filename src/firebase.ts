@@ -8,11 +8,11 @@ import {
 
 const firebaseConfig = {
   apiKey: 'AIzaSyBDeGcBqs0-0ZEIWY77NYC7DotyrAQCq6Y',
-  authDomain: 'YOUR_EXISTING_AUTH_DOMAIN',
-  projectId: 'YOUR_EXISTING_PROJECT_ID',
-  storageBucket: 'YOUR_EXISTING_STORAGE_BUCKET',
-  messagingSenderId: 'YOUR_EXISTING_MESSAGING_SENDER_ID',
-  appId: 'YOUR_EXISTING_APP_ID'
+  authDomain: 'piper-app-4e58f.firebaseapp.com',
+  projectId: 'piper-app-4e58f',
+  storageBucket: 'piper-app-4e58f.firebasestorage.app',
+  messagingSenderId: '274690521000',
+  appId: '1:274690521000:web:152cd8297529e6cec14f9d'
 };
 
 export const app = initializeApp(firebaseConfig);
