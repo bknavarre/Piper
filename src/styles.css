@@ -51,6 +51,7 @@
 .discover-pref-note{margin:-2px 0 18px;color:#667260;font-size:.92rem}
 .hidden{display:none!important}
 
+
 /* Grocery interaction, spacing, and editor */
 .grocery-compact-row{display:grid!important;grid-template-columns:44px minmax(0,1fr) auto;align-items:center;gap:12px;padding:12px 16px!important;margin-left:0!important}
 .grocery-check,.shop-check-button{width:34px!important;height:34px!important;min-width:34px;border:2px solid #7b8a72!important;border-radius:50%!important;background:#fff!important;color:transparent!important;display:grid!important;place-items:center!important;padding:0!important;cursor:pointer;touch-action:manipulation;position:relative;z-index:2}
