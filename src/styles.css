@@ -50,3 +50,12 @@
 .discover-focus button{display:inline-flex;align-items:center;gap:5px}.discover-focus button svg{width:15px;height:15px}
 .discover-pref-note{margin:-2px 0 18px;color:#667260;font-size:.92rem}
 .hidden{display:none!important}
+
+/* Grocery interaction, spacing, and editor */
+.grocery-compact-row{display:grid!important;grid-template-columns:44px minmax(0,1fr) auto;align-items:center;gap:12px;padding:12px 16px!important;margin-left:0!important}
+.grocery-check,.shop-check-button{width:34px!important;height:34px!important;min-width:34px;border:2px solid #7b8a72!important;border-radius:50%!important;background:#fff!important;color:transparent!important;display:grid!important;place-items:center!important;padding:0!important;cursor:pointer;touch-action:manipulation;position:relative;z-index:2}
+.grocery-check:hover,.shop-check-button:hover{background:#edf2e9!important;color:#55624f!important}.grocery-check svg,.shop-check-button svg{width:18px;height:18px;pointer-events:none}
+.grocery-item-info,.grocery-price{border:0;background:transparent;color:inherit;text-align:left;padding:5px 0;cursor:pointer}.grocery-item-info{display:flex;flex-direction:column;min-width:0}.grocery-item-info small{color:#6a7465;margin-top:3px}.grocery-price{font-weight:800;text-align:right;padding:10px 4px}
+.shop-item-row{display:grid;grid-template-columns:48px minmax(0,1fr);align-items:center;gap:10px;padding:8px 4px}.shop-item-main{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;width:100%;border:0;background:transparent;text-align:left;padding:12px;cursor:pointer}
+.grocery-editor select,.grocery-editor input{width:100%}.grocery-editor small{display:block;color:#687263;margin:8px 0 14px}
+@media(max-width:600px){.grocery-compact-row{grid-template-columns:42px minmax(0,1fr) auto;padding-left:18px!important;padding-right:12px!important;gap:10px}.best-mix-store{padding-left:8px!important;padding-right:8px!important}}
