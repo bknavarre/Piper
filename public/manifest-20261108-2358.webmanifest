@@ -1,15 +1,26 @@
 {
-  "id": "/Piper/",
-  "name": "Piper - Good food, made easier.",
+  "id": "/Piper/?app=v20261110-3",
+  "name": "Piper | Good food, made easier.",
   "short_name": "Piper",
-  "start_url": "/Piper/",
+  "description": "Piper keeps recipes, meal plans, groceries and pantry items together.",
+  "start_url": "/Piper/?app=v20261110-3",
   "scope": "/Piper/",
   "display": "standalone",
-  "background_color": "#FCFAF7",
+  "background_color": "#F8F4E8",
   "theme_color": "#55624F",
   "icons": [
-    {"src":"./icons/piper-icon-192-cream-20261108-2358.png","sizes":"192x192","type":"image/png","purpose":"any"},
-    {"src":"./icons/piper-icon-512-cream-20261108-2358.png","sizes":"512x512","type":"image/png","purpose":"any"},
-    {"src":"./icons/piper-icon-maskable-512-cream-20261108-2358.png","sizes":"512x512","type":"image/png","purpose":"maskable"}
-  ]
+    {"src":"/Piper/icons/piper-icon-192-cream-20261108-2358.png?v=20261110-3","sizes":"192x192","type":"image/png","purpose":"any"},
+    {"src":"/Piper/icons/piper-icon-512-cream-20261108-2358.png?v=20261110-3","sizes":"512x512","type":"image/png","purpose":"any"},
+    {"src":"/Piper/icons/piper-icon-512-cream-20261108-2358.png?v=20261110-3-maskable","sizes":"512x512","type":"image/png","purpose":"maskable"}
+  ],
+  "share_target": {
+    "action": "/Piper/?share=1",
+    "method": "GET",
+    "enctype": "application/x-www-form-urlencoded",
+    "params": {
+      "title": "shared_title",
+      "text": "shared_text",
+      "url": "shared_url"
+    }
+  }
 }
