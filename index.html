@@ -2,19 +2,24 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#55624F" />
-  <meta name="description" content="Piper keeps recipes, meal plans, groceries and pantry items together." />
-  <title>Piper | Good food, made easier.</title>
-  <link rel="manifest" href="/Piper/manifest-20261110-share.webmanifest" />
-  <link rel="icon" type="image/png" sizes="192x192" href="/Piper/icons/piper-icon-192-cream-20261108-2358.png" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/Piper/icons/piper-touch-cream-20261108-2358.png" />
-  <link rel="apple-touch-icon-precomposed" sizes="180x180" href="/Piper/icons/piper-touch-cream-20261108-2358.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#F8F4E8" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Piper" />
+  <title>Piper</title>
+  <link rel="manifest" href="/Piper/manifest-v20261110-3.webmanifest" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/Piper/icons/piper-icon-192-cream-20261108-2358.png?v=20261110-3" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/Piper/icons/piper-icon-192-cream-20261108-2358.png?v=20261110-3" />
+  <link rel="icon" type="image/png" sizes="512x512" href="/Piper/icons/piper-icon-512-cream-20261108-2358.png?v=20261110-3" />
 </head>
 <body>
   <div id="root"></div>
   <script type="module" src="/src/main.tsx"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('/Piper/sw.js?v=20261110-3', { scope: '/Piper/' }).catch(console.warn));
+    }
+  </script>
 </body>
 </html>
