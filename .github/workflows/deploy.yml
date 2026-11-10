@@ -3,7 +3,6 @@ name: Deploy Piper to GitHub Pages
 on:
   push:
     branches: ["main"]
-
   workflow_dispatch:
 
 permissions:
@@ -28,6 +27,8 @@ jobs:
         run: npm install
 
       - name: Build Piper
+        env:
+          VITE_RECIPE_SCRAPER_URL: ${{ vars.VITE_RECIPE_SCRAPER_URL }}
         run: npm run build
 
       - name: Setup Pages
