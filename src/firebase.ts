@@ -3,7 +3,7 @@ import { getAuth } from 'firebase/auth';
 import { initializeFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyBlu_flfohiNyKn1PL8jXqLlh7MCrWXwJA',
+  apiKey: 'AIzaSyBDeGcBqs0-0ZEIWY77NYC7DotyrAQCq6Y',
   authDomain: 'piper-app-4e58f.firebaseapp.com',
   projectId: 'piper-app-4e58f',
   storageBucket: 'piper-app-4e58f.firebasestorage.app',
