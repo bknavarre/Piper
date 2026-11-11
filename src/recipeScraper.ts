@@ -1,2 +1,13 @@
 export type ScrapedRecipe={title:string;image:string;servings:number;time:number;ingredients:string[];instructions:string[];tags:string[];sourceName:string;sourceUrl:string};
-export async function scrapeRecipe(url:string):Promise<ScrapedRecipe>{const endpoint=(import.meta as any).env?.VITE_RECIPE_SCRAPER_URL||'';if(!endpoint)throw Error('Recipe web importer is not configured yet.');const cleanUrl=url.trim();if(!/^https?:\/\//i.test(cleanUrl))throw Error('Paste the full recipe webpage address beginning with http:// or https://.');const r=await fetch(endpoint.replace(/\/+$/,'')+'?url='+encodeURIComponent(cleanUrl));if(!r.ok)throw Error(await r.text()||'Could not import recipe.');const recipe=await r.json();if(!recipe||!recipe.title||!Array.isArray(recipe.ingredients)||!Array.isArray(recipe.instructions))throw Error('A complete recipe could not be found on that webpage.');return recipe as ScrapedRecipe}
+
+export async function scrapeRecipe(url:string):Promise<ScrapedRecipe>{
+  const endpoint=(import.meta as any).env?.VITE_RECIPE_SCRAPER_URL||'';
+  if(!endpoint)throw Error('Recipe web importer is not configured yet.');
+  const cleanUrl=url.trim();
+  if(!/^https?:\/\//i.test(cleanUrl))throw Error('Paste the full recipe webpage address beginning with http:// or https://.');
+  const r=await fetch(endpoint.replace(/\/+$/,'')+'?url='+encodeURIComponent(cleanUrl));
+  if(!r.ok)throw Error(await r.text()||'Could not import recipe.');
+  const recipe=await r.json();
+  if(!recipe||!recipe.title||!Array.isArray(recipe.ingredients)||!Array.isArray(recipe.instructions))throw Error('A complete recipe could not be found on that webpage.');
+  return recipe as ScrapedRecipe;
+}
