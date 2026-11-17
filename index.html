@@ -18,19 +18,12 @@
   <div id="root"></div>
   <script type="module" src="/src/main.tsx"></script>
   <script>
+    // Register the service worker. This page NEVER reloads itself:
+    // pages are fetched fresh from the network each time you open or refresh Piper.
     if ('serviceWorker' in navigator) {
-      // Remember whether a worker already controlled this page, so we only reload for real updates.
-      const hadController = !!navigator.serviceWorker.controller;
-      let reloaded = false;
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (!hadController || reloaded) return;
-        reloaded = true;
-        window.location.reload();
-      });
       window.addEventListener('load', () => {
         navigator.serviceWorker
-          .register('/Piper/sw.js?v=20261116-1', { scope: '/Piper/', updateViaCache: 'none' })
-          .then(reg => { reg.update().catch(() => {}); })
+          .register('/Piper/sw.js?v=20261117-1', { scope: '/Piper/', updateViaCache: 'none' })
           .catch(console.warn);
       });
     }
