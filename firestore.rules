@@ -22,15 +22,32 @@ service cloud.firestore {
       return entOk(uid, ['pro', 'family']) || (exists(m) && familyActive(get(m).data.householdId));
     }
 
-    // ───────── Your existing Piper data (recipes, kitchen state, etc.) ─────────
-    // The user's own document
+    // Pass 18: family sharing
+    function inHousehold(hid, uid) {
+      let h = /databases/$(database)/documents/households/$(hid);
+      return exists(h) && uid in get(h).data.members;
+    }
+    function myHousehold() {
+      let m = /databases/$(database)/documents/memberships/$(request.auth.uid);
+      return exists(m) ? get(m).data.householdId : request.auth.uid;
+    }
+    function sameFamily(owner) {
+      let hid = myHousehold();
+      return familyActive(hid) && inHousehold(hid, request.auth.uid) && inHousehold(hid, owner);
+    }
+
+    // ───────── Your Piper data (recipes, kitchen state, etc.) ─────────
     match /users/{userId} {
       allow read, write: if signedIn() && request.auth.uid == userId;
     }
-
-    // Everything under the user EXCEPT the AI usage counter (that has its own stricter rule below)
+    // Everything under the user EXCEPT the AI usage counter (stricter rule below)
     match /users/{userId}/{collection}/{rest=**} {
       allow read, write: if signedIn() && request.auth.uid == userId && collection != 'usage';
+    }
+    // Pass 18: family members can READ each other's shared (non-private) recipes. Never write.
+    match /users/{userId}/recipes/{recipeId} {
+      allow read: if signedIn() && request.auth.uid != userId &&
+        resource.data.familyPrivate == false && sameFamily(userId);
     }
 
     // ───────── Monthly AI counter: +1 at a time, never past the plan limit ─────────
@@ -51,7 +68,7 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // ───────── Member directory (find a UID by email in the console) ─────────
+    // ───────── Member directory ─────────
     match /members/{uid} {
       allow read: if isAdmin() || (signedIn() && request.auth.uid == uid);
       allow create, update: if signedIn() && request.auth.uid == uid &&
@@ -94,14 +111,14 @@ service cloud.firestore {
         || joining(hid) || leaving(hid) || isAdmin());
       allow delete: if signedIn() && (request.auth.uid == hid || isAdmin());
 
-      // Ready for shared grocery / planner later
+      // Shared family data (Pass 18: the shared grocery list lives at shared/grocery)
       match /shared/{rest=**} {
-        allow read, write: if signedIn() &&
+        allow read, write: if signedIn() && familyActive(hid) &&
           request.auth.uid in get(/databases/$(database)/documents/households/$(hid)).data.members;
       }
     }
 
-    // ───────── Invite codes (unguessable; fetched by exact code only) ─────────
+    // ───────── Invite codes ─────────
     match /invites/{code} {
       allow get: if signedIn();
       allow list: if isAdmin();

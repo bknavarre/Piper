@@ -1,4 +1,4 @@
-/* Piper build pass17-20261118 */
+/* Piper build pass18-20261118 */
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Manrope:wght@400;500;600;700;800&display=swap');
 :root {
   --safe-top: env(safe-area-inset-top, 0px);
@@ -630,3 +630,17 @@ nav {
 .hand-toggle input{width:20px;height:20px;accent-color:var(--sage);flex:none}
 .pro-chip{font-style:normal;font-size:.7rem;font-weight:800;color:var(--terra);background:#f6e6dc;padding:2px 8px;border-radius:999px}
 .hand-note{display:block;margin:0 0 12px;padding:10px 12px;border-radius:12px;background:#fbf6e9;color:#6b5a2e;font-size:.84rem;line-height:1.4}
+/* ===== Pass 18: Piper Family sharing ===== */
+.family-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;margin:0 0 16px;border:1.5px solid #b9c2b4;border-radius:16px;background:#fff}
+.family-tabs button{border:0;background:transparent;border-radius:12px;min-height:44px;font-weight:800;color:#3d4638}
+.family-tabs button.on{background:var(--sage);color:#fff;box-shadow:0 2px 8px rgba(85,98,79,.3)}
+.from-chip{position:absolute;left:12px;top:12px;max-width:calc(100% - 24px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:rgba(255,255,255,.95);color:var(--sage);border-radius:999px;padding:5px 11px;font-size:12px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.family-from{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:6px 0 14px;padding:12px 14px;border-radius:14px;background:#eef3e9;border:1px solid #d3dfcb;color:#34452f}
+.family-from .primary{margin:0}
+.share-toggle{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;margin:6px 0 14px;padding:11px 14px;border-radius:14px;border:1px solid #d3dfcb;background:#f4f7f0;color:#34452f;font-weight:800;text-align:left}
+.share-toggle small{font-weight:600;color:#6a7465;font-size:.8rem}
+.share-toggle.off{background:#f7f6f2;border-color:#e0ddd5;color:#5d655a}
+.family-loading{display:flex;align-items:center;gap:4px;color:#5d655a;margin:16px 0}
+.family-refresh{display:flex;margin:18px auto 0}
+.family-grocery-note{max-width:1140px;margin:0 auto -14px;padding:22px 20px 0;color:#44513f;font-weight:700;font-size:.9rem}
+@media(max-width:520px){.family-grocery-note{padding:16px 14px 0}}

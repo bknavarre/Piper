@@ -4,8 +4,11 @@ export type SyncRecipe={id:string;image?:string;[key:string]:unknown};
 export type CloudState={prefs?:unknown;plan?:unknown;groceries?:unknown;pantry?:unknown;onboarded?:boolean;budget?:number};
 export type CommunityGroceryObservation={itemName:string;store:string;zip:string;category:string;aisle:string;price:number};
 const stripUndefined=<T,>(value:T):T=>JSON.parse(JSON.stringify(value));
-const cleanRecipe=(recipe:SyncRecipe)=>{const localPhoto=typeof recipe.image==='string'&&recipe.image.startsWith('data:');return stripUndefined({...recipe,image:localPhoto?'':recipe.image||'',photoSync:localPhoto?'local-only':'cloud-url',updatedAt:Date.now()})};
-export const recipeFingerprint=(r:SyncRecipe)=>JSON.stringify(cleanRecipe(r),Object.keys(cleanRecipe(r)).sort());
+// Pass 18: every synced recipe carries familyPrivate (false = visible to your Piper Family).
+const cleanRecipe=(recipe:SyncRecipe)=>{const localPhoto=typeof recipe.image==='string'&&recipe.image.startsWith('data:');return stripUndefined({...recipe,image:localPhoto?'':recipe.image||'',photoSync:localPhoto?'local-only':'cloud-url',familyPrivate:recipe.familyPrivate===true,updatedAt:Date.now()})};
+// Pass 18: fingerprint ignores updatedAt. Before, the timestamp made every recipe look "changed",
+// so any edit re-uploaded the whole recipe box. Now only recipes that really changed are written.
+export const recipeFingerprint=(r:SyncRecipe)=>{const c=cleanRecipe(r) as Record<string,unknown>;delete c.updatedAt;return JSON.stringify(c,Object.keys(c).sort())};
 export async function loadCloud(uid:string){const stateSnap=await getDoc(doc(db,'users',uid,'state','main'));const recipeSnap=await getDocs(collection(db,'users',uid,'recipes'));return{state:stateSnap.exists()?stateSnap.data() as CloudState:null,recipes:recipeSnap.docs.map(d=>d.data())}}
 export async function saveCloudState(uid:string,state:CloudState){await setDoc(doc(db,'users',uid,'state','main'),stripUndefined({...state,updatedAt:Date.now()}),{merge:true})}
 export async function saveCommunityGroceryObservation(value:CommunityGroceryObservation){await addDoc(collection(db,'communityGroceryObservations'),stripUndefined({...value,itemName:value.itemName.slice(0,120),store:value.store.slice(0,80),zip:value.zip.slice(0,5),category:value.category.slice(0,80),aisle:value.aisle.slice(0,80),price:Math.round(Math.max(0,Math.min(value.price,9999))*100)/100,observedAt:Date.now(),schemaVersion:1}))}

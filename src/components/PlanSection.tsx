@@ -4,6 +4,7 @@ import { usePro } from '../context/ProContext';
 import { FREE_RECIPE_LIMIT, PLAN_NAME } from '../lib/plans';
 import { openManageSubscriptions, restorePurchases } from '../lib/purchases';
 import FamilyManager from './FamilyManager';
+import FamilySharing from './FamilySharing';
 import SwitchPlanSheet from './SwitchPlanSheet';
 import AdminPanel from './AdminPanel';
 import './Pro.css';
@@ -59,12 +60,14 @@ export default function PlanSection() {
 
         {pro.isFamilyOwner && <>
           <FamilyManager />
+          <FamilySharing />
           <button className="ps-btn subtle" onClick={() => setSheet('pro')}>Switch to Pro</button>
           <button className="ps-btn subtle" onClick={() => setSheet('free')}>Switch to Free</button>
         </>}
 
         {pro.isFamilyMember && <>
           <FamilyManager />
+          <FamilySharing />
           <button className="ps-btn subtle" onClick={() => setSheet('free')}>Switch to Free</button>
         </>}
 
