@@ -1,5 +1,11 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+
+import {
+  getAuth,
+  initializeAuth,
+  browserLocalPersistence
+} from 'firebase/auth';
+
 import {
   initializeFirestore,
   persistentLocalCache,
@@ -17,12 +23,19 @@ const firebaseConfig = {
 
 export const app = initializeApp(firebaseConfig);
 
-export const auth = getAuth(app);
-
-// Web Piper keeps the existing multi-tab cache.
-// Native Piper uses a persistent single-tab cache.
 const isNativeBuild = import.meta.env.MODE === 'native';
 
+// Web Piper keeps its existing Firebase Auth initialization.
+// Native Piper gets only the persistence dependency that
+// email/password authentication actually needs.
+export const auth = isNativeBuild
+  ? initializeAuth(app, {
+      persistence: browserLocalPersistence
+    })
+  : getAuth(app);
+
+// Web Piper keeps its existing multi-tab Firestore cache.
+// Native Piper uses a persistent single-WebView cache.
 export const db = initializeFirestore(app, {
   localCache: isNativeBuild
     ? persistentLocalCache()
