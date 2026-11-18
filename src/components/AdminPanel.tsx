@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { collection, doc, getDocs, serverTimestamp, setDoc, Timestamp, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { usePro } from '../context/ProContext';
-import { isAdminEmail } from '../lib/plans.ADD.ts';
+import { isAdminEmail } from '../lib/plans.ADD';
 import './Pro.css';
 
 type Member = {
