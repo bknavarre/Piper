@@ -7,7 +7,7 @@ import {
 } from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyBDeGcBqs0-0ZEIWY77NYC7DotyrAQCq6Y',
+  apiKey: 'YOUR_EXISTING_API_KEY',
   authDomain: 'piper-app-4e58f.firebaseapp.com',
   projectId: 'piper-app-4e58f',
   storageBucket: 'piper-app-4e58f.firebasestorage.app',
@@ -19,9 +19,15 @@ export const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
 
+// Web Piper keeps the existing multi-tab cache.
+// Native Piper uses a persistent single-tab cache.
+const isNativeBuild = import.meta.env.MODE === 'native';
+
 export const db = initializeFirestore(app, {
-  localCache: persistentLocalCache({
-    tabManager: persistentMultipleTabManager()
-  }),
+  localCache: isNativeBuild
+    ? persistentLocalCache()
+    : persistentLocalCache({
+        tabManager: persistentMultipleTabManager()
+      }),
   experimentalAutoDetectLongPolling: true
 });
