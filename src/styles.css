@@ -1,4 +1,4 @@
-/* Piper build pass15-20261118 */
+/* Piper build pass17-20261118 */
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Manrope:wght@400;500;600;700;800&display=swap');
 :root {
   --safe-top: env(safe-area-inset-top, 0px);
@@ -615,42 +615,18 @@ nav {
 .archive-note small{color:#6a7465;font-size:.82rem}
 
 /* ===== Pass 16b: iPhone top buffer on full-screen pages ===== */
+.hero .left,.hero-actions{top:calc(20px + var(--safe-top))}
+.hero .left{left:max(20px,var(--safe-left))}
+.hero-actions{right:max(20px,var(--safe-right))}
+.hero{min-height:calc(250px + var(--safe-top))}
+.editor{padding-top:calc(26px + var(--safe-top))!important;padding-left:max(14px,var(--safe-left));padding-right:max(14px,var(--safe-right));padding-bottom:calc(30px + var(--safe-bottom))}
+.welcome,.tour-shell{padding-top:calc(20px + var(--safe-top));padding-bottom:calc(20px + var(--safe-bottom))}
+.modal{padding-top:calc(16px + var(--safe-top));padding-bottom:calc(16px + var(--safe-bottom))}
+.modal-card{max-height:calc(100dvh - var(--safe-top) - var(--safe-bottom) - 32px)}
+.shop-summary-backdrop{padding-top:calc(16px + var(--safe-top));padding-bottom:calc(16px + var(--safe-bottom))}
 
-/* Recipe page: photo still runs edge to edge; buttons drop below the status bar */
-.hero .left,
-.hero-actions {
-  top: calc(20px + var(--safe-top));
-}
-.hero .left { left: max(20px, var(--safe-left)); }
-.hero-actions { right: max(20px, var(--safe-right)); }
-.hero { min-height: calc(250px + var(--safe-top)); }
-
-/* Recipe editor */
-.editor {
-  padding-top: calc(26px + var(--safe-top)) !important;
-  padding-left: max(14px, var(--safe-left));
-  padding-right: max(14px, var(--safe-right));
-  padding-bottom: calc(30px + var(--safe-bottom));
-}
-
-/* Welcome / onboarding and app tour */
-.welcome,
-.tour-shell {
-  padding-top: calc(20px + var(--safe-top));
-  padding-bottom: calc(20px + var(--safe-bottom));
-}
-
-/* Pop-up windows (importer, Copy Me That, sign-in, add to planner…) */
-.modal {
-  padding-top: calc(16px + var(--safe-top));
-  padding-bottom: calc(16px + var(--safe-bottom));
-}
-.modal-card {
-  max-height: calc(100dvh - var(--safe-top) - var(--safe-bottom) - 32px);
-}
-
-/* Shopping summary */
-.shop-summary-backdrop {
-  padding-top: calc(16px + var(--safe-top));
-  padding-bottom: calc(16px + var(--safe-bottom));
-}
+/* ===== Pass 17: handwritten cards ===== */
+.hand-toggle{display:flex;align-items:center;gap:10px;margin:4px 0 6px;font-weight:700;color:var(--char);cursor:pointer}
+.hand-toggle input{width:20px;height:20px;accent-color:var(--sage);flex:none}
+.pro-chip{font-style:normal;font-size:.7rem;font-weight:800;color:var(--terra);background:#f6e6dc;padding:2px 8px;border-radius:999px}
+.hand-note{display:block;margin:0 0 12px;padding:10px 12px;border-radius:12px;background:#fbf6e9;color:#6b5a2e;font-size:.84rem;line-height:1.4}
