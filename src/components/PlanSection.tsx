@@ -15,7 +15,13 @@ export default function PlanSection() {
   const pro = usePro();
   const [sheet, setSheet] = useState<'free' | 'pro' | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
-  if (pro.loading || !pro.user) return null;
+  if (!pro.user) return (
+    <section className="ps-wrap">
+      <h3 className="ps-h">Your plan</h3>
+      <div className="ps-card"><strong>🥄 Piper Free</strong>
+        <p className="fm-note" style={{ margin: '6px 0 0' }}>Sign in above to unlock Piper Pro or Piper Family and keep your plan on every device.</p></div>
+    </section>);
+  if (pro.loading) return null;
 
   const restore = async () => { const r = await restorePurchases(); setMsg(r.ok ? 'Purchases restored.' : r.message ?? null); };
 

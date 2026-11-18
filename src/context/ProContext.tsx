@@ -1,38 +1,40 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import {
-  collection, doc, getCountFromServer, getDocs, onSnapshot, query, runTransaction,
-  serverTimestamp, setDoc, Timestamp, where, writeBatch,
-} from 'firebase/firestore';
-import { auth, db } from '../firebase'; // adjust if your Firebase file is elsewhere
-import { FREE_RECIPE_LIMIT, LIMITS, monthKey, PaidPlan, Plan, ProReason, RECIPES } from '../lib/plans';
+import { doc, onSnapshot, runTransaction, serverTimestamp, setDoc, Timestamp } from 'firebase/firestore';
+import { auth, db } from '../firebase';
+import { FREE_RECIPE_LIMIT, LIMITS, monthKey, PaidPlan, Plan, ProReason } from '../lib/plans';
 import PaywallModal from '../components/PaywallModal';
-import KeepRecipesPicker from '../components/KeepRecipesPicker';
 
 export type Source = 'none' | 'apple' | 'comp' | 'beta' | 'family';
+export type AiGate = 'ok' | 'limit' | 'signin';
 
 export type ProState = {
   user: User | null;
   loading: boolean;
   plan: Plan;
-  isPro: boolean;              // true for Pro and Family
-  source: Source;              // how they got it
+  isPro: boolean;
+  source: Source;
   expiresAt: Date | null;
   isFamilyOwner: boolean;
-  isFamilyMember: boolean;     // joined someone else's family
-  householdId: string | null;  // family they belong to (owner uid)
+  isFamilyMember: boolean;
+  householdId: string | null;
   aiUsed: number; aiLimit: number; aiRemaining: number;
   recipeLimit: number;
   recipeCounts: { active: number; archived: number };
+  keepOpen: boolean;
 };
 
 type Ctx = ProState & {
   openPaywall: (reason?: ProReason, plan?: PaidPlan) => void;
+  /** App reports how many recipes are active / archived (from its own recipe state). */
+  reportRecipes: (active: number, archived: number) => void;
   openKeepPicker: () => void;
-  refreshRecipeCounts: () => Promise<void>;
+  closeKeepPicker: (dismiss: boolean) => void;
+  /** true = allowed. Otherwise opens the paywall. */
   guardRecipeAdd: (currentActiveCount: number, adding?: number) => boolean;
   guardFeature: (f: 'bulkImport' | 'socialImport') => boolean;
-  useAiAction: () => Promise<boolean>;
+  /** Uses 1 AI action. 'limit' opens the paywall; 'signin' means no account. */
+  consumeAi: () => Promise<AiGate>;
 };
 
 const ProCtx = createContext<Ctx | null>(null);
@@ -52,6 +54,7 @@ export function ProProvider({ children }: { children: ReactNode }) {
   const [famEnt, setFamEnt] = useState<any>(null);
   const [aiUsed, setAiUsed] = useState(0);
   const [counts, setCounts] = useState({ active: 0, archived: 0 });
+  const [countsReady, setCountsReady] = useState(false);
   const [paywall, setPaywall] = useState<{ reason: ProReason; plan: PaidPlan } | null>(null);
   const [keepOpen, setKeepOpen] = useState(false);
   const [keepDismissed, setKeepDismissed] = useState(false);
@@ -59,12 +62,9 @@ export function ProProvider({ children }: { children: ReactNode }) {
   useEffect(() => onAuthStateChanged(auth, setUser), []);
 
   useEffect(() => {
-    setOwnEnt(null); setHouseholdId(null); setAiUsed(0); setKeepDismissed(false);
+    setOwnEnt(null); setHouseholdId(null); setAiUsed(0); setKeepDismissed(false); setKeepOpen(false); setCountsReady(false);
     if (!user) { setOwnLoaded(true); setMemLoaded(true); return; }
     setOwnLoaded(false); setMemLoaded(false);
-    setDoc(doc(db, 'members', user.uid), {
-      email: user.email ?? '', displayName: user.displayName ?? '', lastSeen: serverTimestamp(),
-    }, { merge: true }).catch(() => {});
     const subs = [
       onSnapshot(doc(db, 'entitlements', user.uid),
         s => { setOwnEnt(s.exists() ? s.data() : null); setOwnLoaded(true); },
@@ -78,7 +78,6 @@ export function ProProvider({ children }: { children: ReactNode }) {
     return () => subs.forEach(u => u());
   }, [user]);
 
-  // Owner's entitlement when you're a family member
   useEffect(() => {
     setFamEnt(null);
     if (!user || !householdId) return;
@@ -100,15 +99,15 @@ export function ProProvider({ children }: { children: ReactNode }) {
       isFamilyMember: !ownPlan && viaFamily,
       householdId,
       aiUsed, aiLimit, aiRemaining: Math.max(aiLimit - aiUsed, 0),
-      recipeLimit: LIMITS[plan].recipes, recipeCounts: counts,
+      recipeLimit: LIMITS[plan].recipes, recipeCounts: counts, keepOpen,
     };
-  }, [user, ownEnt, ownLoaded, memLoaded, householdId, famEnt, aiUsed, counts]);
+  }, [user, ownEnt, ownLoaded, memLoaded, householdId, famEnt, aiUsed, counts, keepOpen]);
 
-  // Mirror plan info onto members/{uid} so you can filter/track in the Firebase console.
-  // (Display only — real access always comes from entitlements.)
+  // Reporting mirror on members/{uid} (display only; access always comes from entitlements)
   useEffect(() => {
     if (!user || state.loading) return;
     setDoc(doc(db, 'members', user.uid), {
+      email: user.email ?? '', displayName: user.displayName ?? '',
       plan: state.plan, planSource: state.source,
       householdId: state.isFamilyOwner ? user.uid : state.householdId ?? null,
       familyRole: state.isFamilyOwner ? 'owner' : state.isFamilyMember ? 'member' : null,
@@ -117,39 +116,16 @@ export function ProProvider({ children }: { children: ReactNode }) {
     }, { merge: true }).catch(() => {});
   }, [user, state.loading, state.plan, state.source, state.householdId, state.isFamilyOwner, state.isFamilyMember, counts.active, counts.archived, aiUsed]);
 
-  const refreshRecipeCounts = useCallback(async () => {
-    if (!user) return;
-    try {
-      const col = collection(db, RECIPES.collection(user.uid));
-      const [all, arch] = await Promise.all([
-        getCountFromServer(col),
-        getCountFromServer(query(col, where(RECIPES.archivedField, '==', true))),
-      ]);
-      const archived = arch.data().count;
-      setCounts({ active: all.data().count - archived, archived });
-    } catch { /* offline — keep last known */ }
-  }, [user]);
-
-  useEffect(() => { if (!state.loading) refreshRecipeCounts(); }, [state.loading, state.plan, refreshRecipeCounts]);
-
-  // Upgraded → bring every archived recipe back automatically
+  // On Free with more than 50 active recipes → ask them to choose their 50
   useEffect(() => {
-    if (!user || !state.isPro || counts.archived === 0) return;
-    (async () => {
-      const snap = await getDocs(query(collection(db, RECIPES.collection(user.uid)), where(RECIPES.archivedField, '==', true)));
-      for (let i = 0; i < snap.docs.length; i += 400) {
-        const b = writeBatch(db);
-        snap.docs.slice(i, i + 400).forEach(d => b.update(d.ref, { [RECIPES.archivedField]: false }));
-        await b.commit();
-      }
-      refreshRecipeCounts();
-    })().catch(() => {});
-  }, [user, state.isPro, counts.archived, refreshRecipeCounts]);
+    if (user && countsReady && !state.loading && !state.isPro && counts.active > FREE_RECIPE_LIMIT && !keepDismissed) setKeepOpen(true);
+    if (state.isPro) setKeepOpen(false);
+  }, [user, countsReady, state.loading, state.isPro, counts.active, keepDismissed]);
 
-  // On Free with more than 50 active → ask them to choose their 50
-  useEffect(() => {
-    if (!state.loading && user && !state.isPro && counts.active > FREE_RECIPE_LIMIT && !keepDismissed) setKeepOpen(true);
-  }, [state.loading, state.isPro, counts.active, keepDismissed, user]);
+  const reportRecipes = useCallback((active: number, archived: number) => {
+    setCounts(c => (c.active === active && c.archived === archived ? c : { active, archived }));
+    setCountsReady(true);
+  }, []);
 
   const openPaywall = useCallback((reason: ProReason = 'general', plan: PaidPlan = 'pro') =>
     setPaywall({ reason, plan: reason === 'family' ? 'family' : plan }), []);
@@ -164,8 +140,8 @@ export function ProProvider({ children }: { children: ReactNode }) {
     openPaywall(f); return false;
   }, [state.plan, openPaywall]);
 
-  const useAiAction = useCallback(async () => {
-    if (!user) return false;
+  const consumeAi = useCallback(async (): Promise<AiGate> => {
+    if (!user) return 'signin';
     const ref = doc(db, 'users', user.uid, 'usage', monthKey());
     try {
       const ok = await runTransaction(db, async tx => {
@@ -174,26 +150,22 @@ export function ProProvider({ children }: { children: ReactNode }) {
         tx.set(ref, { aiActions: cur + 1, updatedAt: serverTimestamp() }, { merge: true });
         return true;
       });
-      if (!ok) openPaywall('ai');
-      return ok;
-    } catch { openPaywall('ai'); return false; }
+      if (!ok) { openPaywall('ai'); return 'limit'; }
+      return 'ok';
+    } catch { openPaywall('ai'); return 'limit'; }
   }, [user, state.aiLimit, openPaywall]);
 
   return (
     <ProCtx.Provider value={{
-      ...state, openPaywall, openKeepPicker: () => setKeepOpen(true),
-      refreshRecipeCounts, guardRecipeAdd, guardFeature, useAiAction,
+      ...state, openPaywall, reportRecipes,
+      openKeepPicker: () => setKeepOpen(true),
+      closeKeepPicker: (dismiss: boolean) => { setKeepOpen(false); if (dismiss) setKeepDismissed(true); },
+      guardRecipeAdd, guardFeature, consumeAi,
     }}>
       {children}
       {paywall && (
         <PaywallModal reason={paywall.reason} initialPlan={paywall.plan} currentPlan={state.plan}
           onClose={() => setPaywall(null)} />
-      )}
-      {keepOpen && user && (
-        <KeepRecipesPicker uid={user.uid}
-          onUpgrade={() => { setKeepOpen(false); openPaywall('recipes'); }}
-          onLater={() => { setKeepOpen(false); setKeepDismissed(true); }}
-          onDone={() => { setKeepOpen(false); setKeepDismissed(true); refreshRecipeCounts(); }} />
       )}
     </ProCtx.Provider>
   );

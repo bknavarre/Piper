@@ -1,4 +1,4 @@
-/* Piper build pass14-20261118 */
+/* Piper build pass15-20261118 */
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Manrope:wght@400;500;600;700;800&display=swap');
 :root {
   --safe-top: env(safe-area-inset-top, 0px);
@@ -608,3 +608,8 @@ nav {
 .cook-drawer {
   padding-bottom: calc(20px + var(--safe-bottom));
 }
+/* ===== Pass 15: Piper Pro archive note ===== */
+.archive-note{display:flex;align-items:center;gap:12px;width:100%;margin:0 0 16px;padding:12px 14px;border:1px dashed #b9c2b4;border-radius:16px;background:#f7f8f4;color:#3d4638;text-align:left}
+.archive-note svg{width:22px;height:22px;color:var(--sage);flex:none}
+.archive-note span{display:grid;gap:2px}
+.archive-note small{color:#6a7465;font-size:.82rem}
