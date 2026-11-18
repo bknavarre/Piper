@@ -1,4 +1,4 @@
-/* Piper build pass18-20261118 */
+/* Piper build pass19-20261118 */
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Manrope:wght@400;500;600;700;800&display=swap');
 :root {
   --safe-top: env(safe-area-inset-top, 0px);
@@ -644,3 +644,9 @@ nav {
 .family-refresh{display:flex;margin:18px auto 0}
 .family-grocery-note{max-width:1140px;margin:0 auto -14px;padding:22px 20px 0;color:#44513f;font-weight:700;font-size:.9rem}
 @media(max-width:520px){.family-grocery-note{padding:16px 14px 0}}
+/* ===== Pass 19: family duplicate detection ===== */
+.saved-chip{position:absolute;right:12px;top:12px;display:inline-flex;align-items:center;gap:4px;background:var(--sage);color:#fff;border-radius:999px;padding:5px 10px 5px 8px;font-size:12px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.saved-chip svg{width:14px;height:14px}
+.recipe-card .saved-chip~.from-chip{max-width:calc(100% - 110px)}
+.copied-note{display:block;margin:4px 0 10px;color:#6a7465;font-size:.82rem;line-height:1.4}
+.family-dedupe-note{text-align:center;color:#7a8473;font-size:.82rem;margin:16px 0 0}

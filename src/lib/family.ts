@@ -98,3 +98,118 @@ export function useSharedGrocery<T extends { id: string }>(hid: string | null, o
 
   return { items, setItems, ready };
 }
+
+/* ===================== Pass 19: duplicate detection ===================== */
+
+/** Link from a saved copy back to the recipe it came from. Stored on the copy. */
+export type CopyOrigin = { uid: string; recipeId: string; name: string; fp: string; at: number };
+
+type R19 = { id: string; title: string; ingredients: string[]; instructions: string[]; sourceUrl?: string; copiedFrom?: CopyOrigin };
+
+const norm = (s: unknown) => String(s ?? '').toLowerCase().replace(/[^a-z0-9½¼¾/.]+/g, ' ').replace(/\s+/g, ' ').trim();
+const hash = (s: string) => { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return (h >>> 0).toString(36); };
+
+/** Fingerprint of what the recipe says (title, ingredients, steps). Ignores photo, notes, favorites. */
+export function contentKey(r: R19): string {
+  return hash([norm(r.title), ...(r.ingredients || []).map(norm), '|', ...(r.instructions || []).map(norm)].join('\n'));
+}
+
+/** The same web page, however the link was written (http/https, www, tracking tags, trailing slash). */
+export function sourceKey(r: { sourceUrl?: string }): string {
+  const raw = String(r.sourceUrl || '').trim();
+  if (!raw) return '';
+  try {
+    const u = new URL(raw);
+    if (!/^https?:$/.test(u.protocol)) return '';
+    return (u.hostname.replace(/^www\./, '') + u.pathname.replace(/\/+$/, '')).toLowerCase();
+  } catch { return ''; }
+}
+
+/** An unedited copy still matches the fingerprint taken when it was saved. */
+export const isUneditedCopy = (r: R19) => !!r.copiedFrom && contentKey(r) === r.copiedFrom.fp;
+
+/** Where a recipe really came from. An unedited copy of a copy points to the first original. */
+export function rootOrigin(r: R19, ownerUid: string, ownerName: string): CopyOrigin {
+  if (r.copiedFrom && isUneditedCopy(r)) return r.copiedFrom;
+  return { uid: ownerUid, recipeId: r.id, name: ownerName, fp: contentKey(r), at: Date.now() };
+}
+
+/** Recipes that say the same thing: same web page + title, otherwise same content. */
+function dupKey(r: R19): string {
+  const s = sourceKey(r);
+  return s ? 's:' + s + '|' + norm(r.title) : 'c:' + contentKey(r);
+}
+const originKey = (o: { uid: string; recipeId: string }) => o.uid + ':' + o.recipeId;
+
+export type FamilyCard<R> = {
+  key: string;
+  recipe: R;                                // what opens when tapped
+  owners: { uid: string; name: string }[];  // "From Alice & Lisa"
+  versionOf?: string;                       // edited copy: "Lisa's version of Alice's recipe"
+  saved?: R;                                // my own copy, if I already saved it
+};
+
+export type FamilyDedupe<R> = { cards: FamilyCard<R>[]; hiddenCopies: number; merged: number };
+
+/**
+ * Turns everyone's shared recipes into the Family tab:
+ *  1. Hides unedited copies whose original is visible (or is mine), so nothing shows twice.
+ *  2. Shows edited copies as "Lisa's version".
+ *  3. Combines independent imports of the same web recipe into one card: "From Alice & Lisa".
+ *  4. Marks cards I already saved with ✓ Saved (and links to my copy).
+ */
+export function dedupeFamily<R extends R19>(list: FamilyRecipe<R>[], mine: R[], me: string, myName = 'you'): FamilyDedupe<R> {
+  const visible = new Set(list.map(x => originKey({ uid: x.fromUid, recipeId: x.recipe.id })));
+  mine.forEach(r => visible.add(originKey({ uid: me, recipeId: r.id })));
+  const nameOf = new Map<string, string>([[me, myName]]);
+  list.forEach(x => nameOf.set(x.fromUid, x.from));
+
+  // 1 + 2: drop unedited copies of something still visible; keep edited ones as versions
+  let hiddenCopies = 0;
+  const kept: (FamilyRecipe<R> & { versionOf?: string })[] = [];
+  for (const x of list) {
+    const o = x.recipe.copiedFrom;
+    if (o && o.uid !== x.fromUid && visible.has(originKey(o))) {
+      if (isUneditedCopy(x.recipe)) { hiddenCopies++; continue; }
+      kept.push({ ...x, versionOf: o.uid === me ? 'your' : `${nameOf.get(o.uid) || o.name}’s` });
+      continue;
+    }
+    kept.push(x);
+  }
+
+  // 3: merge same-recipe imports (edited versions always stay separate)
+  const groups = new Map<string, (typeof kept)[number][]>();
+  for (const x of kept) {
+    const k = x.versionOf ? 'v:' + x.fromUid + ':' + x.recipe.id : dupKey(x.recipe);
+    const g = groups.get(k); if (g) g.push(x); else groups.set(k, [x]);
+  }
+
+  // 4: my saved copies, by origin and by sameness
+  const myByOrigin = new Map<string, R>(), myByDup = new Map<string, R>();
+  for (const r of mine) {
+    if (r.copiedFrom) myByOrigin.set(originKey(r.copiedFrom), r);
+    if (!r.copiedFrom || isUneditedCopy(r)) { const k = dupKey(r); if (!myByDup.has(k)) myByDup.set(k, r); }
+  }
+
+  let merged = 0;
+  const cards: FamilyCard<R>[] = [];
+  groups.forEach((g, k) => {
+    g.sort((a, b) => a.from.localeCompare(b.from));
+    if (g.length > 1) merged += g.length - 1;
+    const owners: { uid: string; name: string }[] = [];
+    g.forEach(x => { if (!owners.some(o => o.uid === x.fromUid)) owners.push({ uid: x.fromUid, name: x.from }); });
+    let saved: R | undefined;
+    for (const x of g) {
+      saved = myByOrigin.get(originKey({ uid: x.fromUid, recipeId: x.recipe.id }))
+        || (x.recipe.copiedFrom ? myByOrigin.get(originKey(x.recipe.copiedFrom)) : undefined);
+      if (saved) break;
+    }
+    if (!saved && !g[0].versionOf) saved = myByDup.get(k);
+    cards.push({ key: k, recipe: g[0].recipe, owners, versionOf: g[0].versionOf, saved });
+  });
+  cards.sort((a, b) => String(a.recipe.title).localeCompare(String(b.recipe.title)));
+  return { cards, hiddenCopies, merged };
+}
+
+export const ownersLabel = (owners: { name: string }[]) =>
+  owners.length <= 2 ? owners.map(o => o.name).join(' & ') : `${owners[0].name} & ${owners.length - 1} others`;
