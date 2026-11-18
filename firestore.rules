@@ -3,6 +3,113 @@ service cloud.firestore {
   match /databases/{database}/documents {
     match /users/{userId}/{document=**} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
+
+// ===== MERGE INTO firestore.rules, inside:  match /databases/{database}/documents { ... } =====
+// rules_version = '2'; must be at the top of the file. Replace YOUR_EMAIL. Then Publish.
+
+    function signedIn() { return request.auth != null; }
+    function isAdmin() {
+      return signedIn() && request.auth.token.email_verified == true &&
+             request.auth.token.email in ['bknavarre@gmail.com'];
+    }
+    function entOk(uid, plans) {
+      let p = /databases/$(database)/documents/entitlements/$(uid);
+      return exists(p) && get(p).data.active == true && get(p).data.plan in plans &&
+             (get(p).data.get('expiresAt', null) == null || get(p).data.expiresAt > request.time);
+    }
+    function familyActive(hid) { return entOk(hid, ['family']); }
+    function hasPro(uid) {
+      let m = /databases/$(database)/documents/memberships/$(uid);
+      return entOk(uid, ['pro', 'family']) || (exists(m) && familyActive(get(m).data.householdId));
+    }
+
+    // ── Who has Pro/Family. Only admins (later: purchase webhook) write. ──
+    match /entitlements/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin() ||
+        (exists(/databases/$(database)/documents/households/$(uid)) &&
+         request.auth.uid in get(/databases/$(database)/documents/households/$(uid)).data.members));
+      allow write: if isAdmin();
+    }
+
+    // ── Member directory (find a UID by email in the console) ──
+    match /members/{uid} {
+      allow read: if isAdmin() || (signedIn() && request.auth.uid == uid);
+      allow create, update: if signedIn() && request.auth.uid == uid &&
+        request.resource.data.keys().hasOnly(['email', 'displayName', 'lastSeen', 'plan', 'planSource',
+          'householdId', 'familyRole', 'recipesActive', 'recipesArchived', 'aiUsedThisMonth']);
+      allow delete: if isAdmin();
+    }
+
+    // ── Family households (doc id = owner uid) ──
+    function joining(hid) {
+      let d = request.resource.data;
+      return !(request.auth.uid in resource.data.members)
+        && d.diff(resource.data).affectedKeys().hasOnly(['members', 'memberCount', 'memberInfo', 'lastJoinCode'])
+        && d.members.toSet() == resource.data.members.toSet().union([request.auth.uid].toSet())
+        && d.members.size() <= 5 && d.memberCount == d.members.size()
+        && d.memberInfo.diff(resource.data.memberInfo).affectedKeys().hasOnly([request.auth.uid])
+        && familyActive(hid)
+        && exists(/databases/$(database)/documents/invites/$(d.lastJoinCode))
+        && get(/databases/$(database)/documents/invites/$(d.lastJoinCode)).data.ownerUid == hid;
+    }
+    function leaving(hid) {
+      let d = request.resource.data;
+      return request.auth.uid in resource.data.members && request.auth.uid != hid
+        && d.diff(resource.data).affectedKeys().hasOnly(['members', 'memberCount', 'memberInfo'])
+        && d.memberCount == d.members.size()
+        && d.members.toSet() == resource.data.members.toSet().difference([request.auth.uid].toSet());
+    }
+    match /households/{hid} {
+      allow get: if signedIn() && (isAdmin() || request.auth.uid in resource.data.members);
+      allow list: if isAdmin();
+      allow create: if signedIn() && request.auth.uid == hid && familyActive(hid) &&
+        request.resource.data.ownerUid == hid && request.resource.data.members == [hid] &&
+        request.resource.data.memberCount == 1;
+      allow update: if signedIn() && (
+        (request.auth.uid == hid && request.resource.data.ownerUid == hid &&
+         hid in request.resource.data.members && request.resource.data.members.size() <= 5 &&
+         request.resource.data.get('memberCount', 0) == request.resource.data.members.size())
+        || joining(hid) || leaving(hid) || isAdmin());
+      allow delete: if signedIn() && (request.auth.uid == hid || isAdmin());
+
+      // Ready for shared grocery / planner later
+      match /shared/{rest=**} {
+        allow read, write: if signedIn() &&
+          request.auth.uid in get(/databases/$(database)/documents/households/$(hid)).data.members;
+      }
+    }
+
+    // ── Invite codes (unguessable; can be fetched by exact code only) ──
+    match /invites/{code} {
+      allow get: if signedIn();
+      allow list: if isAdmin();
+      allow create: if signedIn() && request.resource.data.ownerUid == request.auth.uid && familyActive(request.auth.uid);
+      allow delete: if signedIn() && (resource.data.ownerUid == request.auth.uid || isAdmin());
+    }
+
+    // ── Which family a user belongs to ──
+    match /memberships/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || resource.data.householdId == request.auth.uid || isAdmin());
+      allow create: if signedIn() && request.auth.uid == uid && request.resource.data.householdId != uid &&
+        request.auth.uid in getAfter(/databases/$(database)/documents/households/$(request.resource.data.householdId)).data.members;
+      allow update: if isAdmin();
+      allow delete: if signedIn() && (request.auth.uid == uid || resource.data.householdId == request.auth.uid || isAdmin());
+    }
+
+    // ── Monthly AI counter: +1 at a time, never past the plan limit ──
+    match /users/{uid}/usage/{month} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow create: if signedIn() && request.auth.uid == uid && request.resource.data.aiActions == 1;
+      allow update: if signedIn() && request.auth.uid == uid &&
+        request.resource.data.aiActions == resource.data.aiActions + 1 &&
+        request.resource.data.aiActions <= (hasPro(uid) ? 100 : 5);
+      allow write: if isAdmin();
+    }
+
+// NOTE: your existing users/{uid}/recipes rules must let the owner update recipes
+// (the 'archived' and 'archivedAt' fields are written by the Keep-50 picker).
+
+
     }
     match /communityGroceryObservations/{observationId} {
       allow create: if request.auth != null
