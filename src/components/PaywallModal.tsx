@@ -15,7 +15,7 @@ const HEAD: Record<ProReason, { title: string; body: string }> = {
 const BENEFITS: Record<PaidPlan, [string, string, string][]> = {
   pro: [
     ['✨', 'Piper AI', 'Clean up messy recipes, create new ones from an idea, swap ingredients, and scale servings.'],
-    ['📚', 'Unlimited recipes', 'Save your whole collection. No caps, no clutter.'],
+    ['📖', 'Share your recipes', 'See each other’s recipes and save favorites to your own cookbook.'],
     ['📦', 'Bring your whole cookbook', 'Import your collection from Copy Me That and other recipe apps.'],
     ['📥', 'Import from anywhere', 'Websites and social captions become clean, cookable Piper cards.'],
     ['🗓️', 'Smarter planning', 'Let Piper build your week and turn it into a grocery list.'],
