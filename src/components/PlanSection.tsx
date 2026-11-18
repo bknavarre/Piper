@@ -5,6 +5,7 @@ import { FREE_RECIPE_LIMIT, PLAN_NAME } from '../lib/plans';
 import { openManageSubscriptions, restorePurchases } from '../lib/purchases';
 import FamilyManager from './FamilyManager';
 import SwitchPlanSheet from './SwitchPlanSheet';
+import AdminPanel from './AdminPanel';
 import './Pro.css';
 
 const SOURCE_LABEL: Record<string, string> = {
@@ -15,6 +16,7 @@ export default function PlanSection() {
   const pro = usePro();
   const [sheet, setSheet] = useState<'free' | 'pro' | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
+
   if (!pro.user) return (
     <section className="ps-wrap">
       <h3 className="ps-h">Your plan</h3>
@@ -74,6 +76,8 @@ export default function PlanSection() {
         {pro.source === 'apple' && <>·<button onClick={openManageSubscriptions}>Manage subscription</button></>}
       </div>
       {msg && <p className="pw-msg">{msg}</p>}
+
+      <AdminPanel />
 
       {sheet && <SwitchPlanSheet target={sheet} onClose={() => setSheet(null)} />}
     </section>
