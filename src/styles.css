@@ -689,3 +689,24 @@ nav {
 .whats-new li{display:flex;gap:10px;align-items:flex-start;padding:11px 12px;border-radius:12px;background:#faf9f6;font-size:.93rem;line-height:1.45;color:#3d4638}
 .whats-new li svg{width:18px;height:18px;flex:none;color:var(--sage);margin-top:2px}
 .welcome-piper .primary.wide,.whats-new .primary.wide{min-height:48px}
+/* ===== Pass 22: admin feedback inbox ===== */
+nav button{position:relative}
+.nav-feedback-badge{position:absolute;top:3px;left:calc(50% + 7px);min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#b6463a;color:#fff;font:800 10px/18px Manrope,system-ui,sans-serif;text-align:center;font-style:normal;box-shadow:0 0 0 2px #fff}
+.admin-feedback-card{border-color:#d7c9a8;background:linear-gradient(145deg,#fffdf6,#fff)}
+.admin-feedback-card h3{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.admin-feedback-card h3 svg{color:var(--terra)}
+.admin-feedback-card h3 em{margin-left:auto;padding:3px 9px;border-radius:999px;background:#b6463a;color:#fff;font-size:.72rem;font-style:normal;font-family:Manrope,system-ui,sans-serif}
+.admin-feedback{max-width:660px}
+.feedback-filters{display:flex;gap:6px;overflow-x:auto;padding:2px 0 12px}
+.feedback-filters button{flex:none;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 12px;font-size:.82rem;font-weight:800;color:#4b5545}
+.feedback-filters button.on{background:var(--sage);border-color:var(--sage);color:#fff}
+.feedback-inbox{display:grid;gap:10px;max-height:58vh;overflow:auto;padding-right:2px}
+.feedback-report{border:1px solid var(--line);border-left:5px solid #b6463a;border-radius:14px;padding:13px;background:#fff;text-align:left}
+.feedback-report.reviewing{border-left-color:#d5a21a}.feedback-report.fixed{border-left-color:#5b8754}
+.feedback-report-head{display:flex;justify-content:space-between;gap:12px;align-items:center}.feedback-report-head span{color:#7a8473;font-size:.78rem;white-space:nowrap}
+.feedback-report p{margin:10px 0;white-space:pre-wrap;line-height:1.45}
+.feedback-meta{display:flex;flex-wrap:wrap;gap:5px 10px;color:#6a7465;font-size:.75rem;margin-bottom:10px}
+.feedback-status-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.feedback-status-actions button{border:1px solid #cbd2c7;background:#fff;border-radius:9px;min-height:38px;color:#4b5545;font-weight:700;font-size:.8rem}
+.feedback-status-actions button:disabled{background:#eef3e9;color:var(--sage);border-color:#b9c8b2;opacity:1}
+.feedback-empty{display:grid;justify-items:center;gap:8px;padding:32px 12px;color:#68725f}.feedback-empty svg{width:32px;height:32px;color:#5b8754}
