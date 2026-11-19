@@ -35,7 +35,7 @@ const pantrySeed:Pantry[]=[
 ];
 const groceriesSeed:Grocery[]=[]
 const allergyOpts=['Dairy','Eggs','Peanuts','Tree nuts','Soy','Gluten','Fish','Shellfish','Sesame'];const dislikeOpts=['Mushrooms','Olives','Cilantro','Onions','Tomatoes','Spicy food','Seafood'];
-const STORE_OPTIONS=['H-E-B','Kroger','Walmart','Aldi','Albertsons','Safeway','Publix','Trader Joe’s','Costco','Sam’s Club','Target','Whole Foods','Food Lion','Sprouts','Meijer','Wegmans','ShopRite','Stop & Shop'];
+const STORE_OPTIONS=['H-E-B','Kroger','Walmart','Aldi','Tom Thumb','Albertsons','Safeway','Publix','Trader Joe’s','Costco','Sam’s Club','Target','Whole Foods','Food Lion','Sprouts','Meijer','Wegmans','ShopRite','Stop & Shop'];
 const DISCOVER_FOCUS=['For You','Heart Healthy','Low Calorie','Keto','Quick Meals','High Protein','Vegetarian','Family Friendly','Favorites'];
 const RECIPE_CATEGORIES=['Appetizers','Beef','Beverages','Breads','Breakfast','Cake','Candy','Casserole','Cheesecake','Chicken','Cookies & Bars','Custard/Pudding','Dessert','Dressing','Frosting','Fruit','Holiday','Ice Cream','Jam & Jelly','Lamb','Main Dishes','Pasta','Pastry','Pickles','Pie','Pork','Rice','Rub & Marinade','Salad','Sandwiches','Sauce','Seafood','Snack','Soup','Vegetable','Veggie'];
 const AUTOFILL_FOCUS=['Balanced','Heart Healthy','Low Calorie','Keto','Quick Meals','High Protein','Vegetarian','Family Friendly'];
