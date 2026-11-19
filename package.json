@@ -13,6 +13,10 @@
     "android": "npm run cap:sync && npx cap open android"
   },
   "dependencies": {
+    "@capacitor/android": "^8.0.0",
+    "@capacitor/core": "^8.0.0",
+    "@capacitor/ios": "^8.0.0",
+    "@capacitor/share": "^8.0.0",
     "@vitejs/plugin-react": "4.3.4",
     "lucide-react": "0.468.0",
     "react": "18.3.1",
@@ -23,6 +27,7 @@
     "jszip": "^3.10.1"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.0.0",
     "@types/react": "18.3.12",
     "@types/react-dom": "18.3.1",
     "typescript": "5.6.3"
