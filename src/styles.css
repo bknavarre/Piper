@@ -1,4 +1,4 @@
-/* Piper build pass19-20261118 */
+/* Piper build pass20-20261118 */
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Manrope:wght@400;500;600;700;800&display=swap');
 :root {
   --safe-top: env(safe-area-inset-top, 0px);
@@ -650,3 +650,26 @@ nav {
 .recipe-card .saved-chip~.from-chip{max-width:calc(100% - 110px)}
 .copied-note{display:block;margin:4px 0 10px;color:#6a7465;font-size:.82rem;line-height:1.4}
 .family-dedupe-note{text-align:center;color:#7a8473;font-size:.82rem;margin:16px 0 0}
+/* ===== Pass 20: recipe sharing, feedback, legal links ===== */
+.card-share{position:absolute;right:62px;top:12px;width:42px;height:42px;border:0;border-radius:50%;background:rgba(255,255,255,.94);color:var(--sage);display:grid;place-items:center;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.card-share svg{width:19px;height:19px}
+.card-share:active{transform:scale(.94)}
+.hero-actions .round{color:var(--sage)}
+.app-toast{z-index:300}
+.feedback-card h3{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.feedback-card h3 svg{width:20px;height:20px;color:var(--sage)}
+.feedback-card .primary{margin-top:6px}
+.feedback-card .primary svg{width:18px;height:18px}
+.feedback-modal{max-width:520px}
+.feedback-kinds{display:grid;gap:6px;margin-bottom:4px}
+.feedback-kinds button{min-height:44px;border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 12px;text-align:left;font-weight:700;color:#3d4638}
+.feedback-kinds button.on{border-color:var(--sage);background:#eef3e9;box-shadow:0 0 0 2px rgba(85,98,79,.18)}
+.feedback-modal select{width:100%;min-height:44px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#fff;font:inherit}
+.feedback-modal label small{display:inline;font-weight:500;color:#7a8473;margin:0}
+.feedback-modal textarea{min-height:130px!important}
+.feedback-diag{margin:12px 0 2px!important;font-weight:600!important}
+.feedback-privacy{color:#6a7465!important;font-size:.82rem;line-height:1.4}
+.feedback-modal .primary.wide{margin-top:12px;min-height:48px}
+.feedback-signin{color:#4b5545;line-height:1.5;margin:8px 0 14px}
+.legal-links{display:flex;justify-content:center;flex-wrap:wrap;gap:6px 18px;margin:22px 0 0}
+.legal-links a{color:var(--sage);font-weight:700;font-size:.88rem;text-decoration:underline;min-height:32px;display:inline-flex;align-items:center}
