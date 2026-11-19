@@ -28,8 +28,10 @@
     // pages are fetched fresh from the network each time you open or refresh Piper.
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker
-          .register('/Piper/sw.js?v=20261117-1', { scope: '/Piper/', updateViaCache: 'none' })
+        navigator.serviceWorker.register(
+         '/sw.js?v=20261117-1',
+         { scope: '/' }
+        )
           .catch(console.warn);
       });
     }
