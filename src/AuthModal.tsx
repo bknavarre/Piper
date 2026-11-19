@@ -7,6 +7,24 @@ import {
 } from 'firebase/auth';
 import { auth } from './firebase';
 
+// Pass 20: friendly sign-in messages. Native sign-in keeps the working Firebase setup in firebase.ts.
+const FRIENDLY: Record<string, string> = {
+  'auth/invalid-credential': 'That email or password is not right. Check both and try again.',
+  'auth/wrong-password': 'That email or password is not right. Check both and try again.',
+  'auth/user-not-found': 'That email or password is not right. Check both and try again.',
+  'auth/invalid-email': 'That email address does not look right.',
+  'auth/email-already-in-use': 'An account already exists for this email. Try signing in instead.',
+  'auth/weak-password': 'Choose a password with at least 6 characters.',
+  'auth/too-many-requests': 'Too many attempts. Please wait a few minutes and try again.',
+  'auth/network-request-failed': 'Piper could not reach the internet. Check your connection and try again.',
+  'auth/user-disabled': 'This account has been turned off. Contact owner@upswingtx.com for help.',
+  'auth/missing-password': 'Enter your password.',
+};
+const friendly = (e: any) =>
+  e?.message === 'AUTH_TIMEOUT'
+    ? 'Sign-in is taking too long. Check your connection and try again.'
+    : FRIENDLY[e?.code] || 'Something went wrong. Please try again.';
+
 export default function AuthModal({
   close,
   success,
@@ -23,75 +41,42 @@ export default function AuthModal({
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
 
-  // Temporary native sign-in diagnostic.
-  // Once native login is working, we can remove this.
-  const [stage, setStage] = useState('');
-
   async function submit() {
     if (mode === 'signup' && password !== confirm) {
       setMessage('Passwords do not match.');
       return;
     }
-
     setBusy(true);
     setMessage('');
-    setStage('1/3 Contacting Firebase…');
-
     try {
-      const authPromise =
+      const work =
         mode === 'signup'
-          ? createUserWithEmailAndPassword(auth, email, password)
-          : signInWithEmailAndPassword(auth, email, password);
-
-      // Do not let native Piper sit on "Working…" forever.
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        window.setTimeout(() => {
-          reject(new Error('AUTH_TIMEOUT_AFTER_15_SECONDS'));
-        }, 15000);
-      });
-
-      await Promise.race([authPromise, timeoutPromise]);
-
-      setStage('2/3 Signed in. Loading kitchen…');
-
-      // Give React a moment to paint the stage before Piper starts
-      // whatever post-login initialization is in success().
-      await new Promise<void>((resolve) => {
-        window.setTimeout(resolve, 500);
-      });
-
+          ? createUserWithEmailAndPassword(auth, email.trim(), password)
+          : signInWithEmailAndPassword(auth, email.trim(), password);
+      // Never leave the button spinning forever if the connection drops.
+      const timeout = new Promise<never>((_, reject) =>
+        window.setTimeout(() => reject(new Error('AUTH_TIMEOUT')), 20000)
+      );
+      await Promise.race([work, timeout]);
       success();
-
-      setStage('3/3 Kitchen load started…');
     } catch (e: any) {
-      console.error('Piper native sign-in diagnostic:', e);
-
-      if (e?.message === 'AUTH_TIMEOUT_AFTER_15_SECONDS') {
-        setMessage(
-          'Firebase sign-in did not answer within 15 seconds.'
-        );
-      } else {
-        const code = e?.code ? `${e.code}: ` : '';
-        setMessage(
-          `${code}${e?.message || String(e)}`
-        );
-      }
+      console.warn('Piper sign-in:', e?.code || e);
+      setMessage(friendly(e));
     } finally {
       setBusy(false);
     }
   }
 
   async function reset() {
-    if (!email) {
+    if (!email.trim()) {
       setMessage('Enter your email first.');
       return;
     }
-
     try {
-      await sendPasswordResetEmail(auth, email);
-      setMessage('Password reset email sent.');
+      await sendPasswordResetEmail(auth, email.trim());
+      setMessage('Password reset email sent. Check your inbox.');
     } catch (e: any) {
-      setMessage(String(e?.message || e));
+      setMessage(friendly(e));
     }
   }
 
@@ -100,90 +85,50 @@ export default function AuthModal({
       <div className="modal-card piper-auth">
         <div className="modal-head">
           <div>
-            <h2>
-              {mode === 'signup'
-                ? 'Create your Piper account'
-                : 'Sign in to Piper'}
-            </h2>
-
+            <h2>{mode === 'signup' ? 'Create your Piper account' : 'Sign in to Piper'}</h2>
             <p>
               {mode === 'signup'
                 ? 'Create your account before continuing setup.'
                 : 'Sign in before continuing setup.'}
             </p>
           </div>
-
           <button onClick={close} aria-label="Close">
             <X />
           </button>
         </div>
-
         <label>Email</label>
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          autoComplete="email"
-        />
-
+        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
         <label>Password</label>
         <input
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          autoComplete={
-            mode === 'signup'
-              ? 'new-password'
-              : 'current-password'
-          }
+          autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
         />
-
         {mode === 'signup' && (
           <>
             <label>Confirm password</label>
-            <input
-              type="password"
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-              autoComplete="new-password"
-            />
+            <input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="new-password" />
           </>
         )}
-
-        <button
-          className="primary wide"
-          disabled={busy || !email || password.length < 6}
-          onClick={submit}
-        >
-          {busy
-            ? stage || 'Working…'
-            : mode === 'signup'
-              ? 'Create account'
-              : 'Sign in'}
+        <button className="primary wide" disabled={busy || !email || password.length < 6} onClick={submit}>
+          {busy ? (mode === 'signup' ? 'Creating account…' : 'Signing in…') : mode === 'signup' ? 'Create account' : 'Sign in'}
         </button>
-
         <button
           className="auth-link"
           onClick={() => {
             setMode(mode === 'signup' ? 'signin' : 'signup');
             setMessage('');
-            setStage('');
           }}
         >
-          {mode === 'signup'
-            ? 'Already have an account? Sign in'
-            : 'New to Piper? Create account'}
+          {mode === 'signup' ? 'Already have an account? Sign in' : 'New to Piper? Create account'}
         </button>
-
         {mode === 'signin' && (
           <button className="auth-link" onClick={reset}>
             Forgot password
           </button>
         )}
-
-        {message && (
-          <p className="auth-message">{message}</p>
-        )}
+        {message && <p className="auth-message" role="status">{message}</p>}
       </div>
     </div>
   );
