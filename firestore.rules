@@ -138,6 +138,27 @@ service cloud.firestore {
         (request.auth.uid == uid || resource.data.householdId == request.auth.uid || isAdmin());
     }
 
+// ───────── Pass 20: beta feedback ─────────
+// Paste this block inside "match /databases/{database}/documents { ... }",
+// for example just above the "Community grocery prices" section.
+    match /betaFeedback/{feedbackId} {
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['uid','email','category','area','message','diagnostics','status','createdAt','schemaVersion'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.category in ['bug','idea','look','love','other']
+        && request.resource.data.message is string
+        && request.resource.data.message.size() >= 1 && request.resource.data.message.size() <= 4000
+        && request.resource.data.area is string && request.resource.data.area.size() <= 40
+        && request.resource.data.email is string && request.resource.data.email.size() <= 200
+        && (request.resource.data.diagnostics == null || request.resource.data.diagnostics is map)
+        && request.resource.data.status == 'new'
+        && request.resource.data.createdAt is number
+        && request.resource.data.schemaVersion == 1;
+      // Testers can never read anyone's reports. Only you (isAdmin) can read or update them.
+      allow read, update, delete: if isAdmin();
+    }
+
+
     // ───────── Community grocery prices (unchanged) ─────────
     match /communityGroceryObservations/{observationId} {
       allow create: if request.auth != null
