@@ -1,4 +1,5 @@
 rules_version = '2';
+// Piper Firestore rules - Pass 23
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -22,32 +23,31 @@ service cloud.firestore {
       return entOk(uid, ['pro', 'family']) || (exists(m) && familyActive(get(m).data.householdId));
     }
 
-    // Pass 18: family sharing
-    function inHousehold(hid, uid) {
-      let h = /databases/$(database)/documents/households/$(hid);
-      return exists(h) && uid in get(h).data.members;
-    }
-    function myHousehold() {
-      let m = /databases/$(database)/documents/memberships/$(request.auth.uid);
-      return exists(m) ? get(m).data.householdId : request.auth.uid;
-    }
-    function sameFamily(owner) {
-      let hid = myHousehold();
-      return familyActive(hid) && inHousehold(hid, request.auth.uid) && inHousehold(hid, owner);
+    // Pass 23: true when the signed-in person and `other` are in the same active family.
+    function inFamilyWith(other) {
+      let me = request.auth.uid;
+      let ownHh = /databases/$(database)/documents/households/$(me);
+      let mem = /databases/$(database)/documents/memberships/$(me);
+      return (exists(ownHh) && familyActive(me) && other in get(ownHh).data.members)
+        || (exists(mem) && familyActive(get(mem).data.householdId)
+            && other in get(/databases/$(database)/documents/households/$(get(mem).data.householdId)).data.members);
     }
 
-    // ───────── Your Piper data (recipes, kitchen state, etc.) ─────────
+    // ───────── Your existing Piper data (recipes, kitchen state, etc.) ─────────
     match /users/{userId} {
       allow read, write: if signedIn() && request.auth.uid == userId;
     }
-    // Everything under the user EXCEPT the AI usage counter (stricter rule below)
+
+    // Everything under the user EXCEPT the AI usage counter (that has its own stricter rule below)
     match /users/{userId}/{collection}/{rest=**} {
       allow read, write: if signedIn() && request.auth.uid == userId && collection != 'usage';
     }
-    // Pass 18: family members can READ each other's shared (non-private) recipes. Never write.
+
+    // Pass 23: family members can READ recipes that are shared with the family (never private ones).
     match /users/{userId}/recipes/{recipeId} {
-      allow read: if signedIn() && request.auth.uid != userId &&
-        resource.data.familyPrivate == false && sameFamily(userId);
+      allow read: if signedIn() && request.auth.uid != userId
+        && resource.data.familyPrivate == false
+        && inFamilyWith(userId);
     }
 
     // ───────── Monthly AI counter: +1 at a time, never past the plan limit ─────────
@@ -68,13 +68,14 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // ───────── Member directory ─────────
+    // ───────── Member directory (find a UID by email in the console) ─────────
     match /members/{uid} {
       allow read: if isAdmin() || (signedIn() && request.auth.uid == uid);
       allow create, update: if signedIn() && request.auth.uid == uid &&
         request.resource.data.keys().hasOnly(['email', 'displayName', 'lastSeen', 'plan', 'planSource',
           'householdId', 'familyRole', 'recipesActive', 'recipesArchived', 'aiUsedThisMonth']);
-      allow delete: if isAdmin();
+      // Pass 23: people can delete their own entry (Delete account)
+      allow delete: if isAdmin() || (signedIn() && request.auth.uid == uid);
     }
 
     // ───────── Family households (doc id = owner uid) ─────────
@@ -111,17 +112,18 @@ service cloud.firestore {
         || joining(hid) || leaving(hid) || isAdmin());
       allow delete: if signedIn() && (request.auth.uid == hid || isAdmin());
 
-      // Shared family data (Pass 18: the shared grocery list lives at shared/grocery)
+      // Shared grocery list (only family members)
       match /shared/{rest=**} {
-        allow read, write: if signedIn() && familyActive(hid) &&
+        allow read, write: if signedIn() &&
           request.auth.uid in get(/databases/$(database)/documents/households/$(hid)).data.members;
       }
     }
 
-    // ───────── Invite codes ─────────
+    // ───────── Invite codes (unguessable; fetched by exact code only) ─────────
     match /invites/{code} {
       allow get: if signedIn();
-      allow list: if isAdmin();
+      // Pass 23: owners can list their OWN invites (used by Delete account to clean up)
+      allow list: if isAdmin() || (signedIn() && resource.data.ownerUid == request.auth.uid);
       allow create: if signedIn() && request.resource.data.ownerUid == request.auth.uid &&
         familyActive(request.auth.uid);
       allow delete: if signedIn() && (resource.data.ownerUid == request.auth.uid || isAdmin());
@@ -138,33 +140,32 @@ service cloud.firestore {
         (request.auth.uid == uid || resource.data.householdId == request.auth.uid || isAdmin());
     }
 
-// ───────── Pass 20: beta feedback ─────────
-// Paste this block inside "match /databases/{database}/documents { ... }",
-// for example just above the "Community grocery prices" section.
-    match /betaFeedback/{feedbackId} {
+    // ───────── Pass 23: Beta feedback + automatic error reports ─────────
+    match /betaFeedback/{id} {
       allow create: if signedIn()
-        && request.resource.data.keys().hasOnly(['uid','email','category','area','message','diagnostics','status','createdAt','schemaVersion'])
+        && request.resource.data.keys().hasOnly(['uid', 'email', 'category', 'area', 'message', 'diagnostics', 'status', 'createdAt', 'schemaVersion'])
         && request.resource.data.uid == request.auth.uid
-        && request.resource.data.category in ['bug','idea','look','love','other']
+        && request.resource.data.status == 'new'
         && request.resource.data.message is string
         && request.resource.data.message.size() >= 1 && request.resource.data.message.size() <= 4000
+        && request.resource.data.category is string && request.resource.data.category.size() <= 20
         && request.resource.data.area is string && request.resource.data.area.size() <= 40
         && request.resource.data.email is string && request.resource.data.email.size() <= 200
         && (request.resource.data.diagnostics == null || request.resource.data.diagnostics is map)
-        && request.resource.data.status == 'new'
-        && request.resource.data.createdAt is number
-        && request.resource.data.schemaVersion == 1;
-      // Testers can never read anyone's reports. Only you (isAdmin) can read or update them.
-      allow read, update, delete: if isAdmin();
+        && request.resource.data.createdAt is number;
+      // Admin sees everything; each person can see (and delete) only their own reports
+      allow read: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt']);
+      allow delete: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
     }
-
 
     // ───────── Community grocery prices (unchanged) ─────────
     match /communityGroceryObservations/{observationId} {
       allow create: if request.auth != null
         && request.resource.data.keys().hasOnly(['itemName','store','zip','category','aisle','price','observedAt','schemaVersion'])
         && request.resource.data.itemName is string && request.resource.data.itemName.size() >= 1 && request.resource.data.itemName.size() <= 120
-        && request.resource.data.store is string && request.resource.data.store.size() >= 1 && request.resource.data.store.size() <= 80
+        && request.resource.data.store is string && request.resource.data.store.size() <= 80
         && request.resource.data.zip is string && request.resource.data.zip.size() <= 5
         && request.resource.data.category is string && request.resource.data.category.size() <= 80
         && request.resource.data.aisle is string && request.resource.data.aisle.size() <= 80
