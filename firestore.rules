@@ -51,12 +51,14 @@ service cloud.firestore {
     }
 
     // ───────── Monthly AI counter: +1 at a time, never past the plan limit ─────────
+   // Pass 24 BETA: every signed-in Piper tester receives the Pro AI allowance.
+   // After beta, restore: request.resource.data.aiActions <= (hasPro(uid) ? 100 : 5);
     match /users/{uid}/usage/{month} {
       allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
       allow create: if signedIn() && request.auth.uid == uid && request.resource.data.aiActions == 1;
       allow update: if signedIn() && request.auth.uid == uid &&
         request.resource.data.aiActions == resource.data.aiActions + 1 &&
-        request.resource.data.aiActions <= (hasPro(uid) ? 100 : 5);
+        request.resource.data.aiActions <= 100;
       allow delete: if isAdmin();
     }
 
