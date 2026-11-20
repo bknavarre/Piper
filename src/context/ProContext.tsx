@@ -39,6 +39,10 @@ type Ctx = ProState & {
 
 const ProCtx = createContext<Ctx | null>(null);
 
+// Pass 24: all signed-in beta testers receive Piper Pro.
+// Set to false when the beta-wide Pro period ends.
+const BETA_PRO = true;
+
 const entActive = (e: any) => {
   if (!e || e.active !== true) return false;
   const exp = e.expiresAt instanceof Timestamp ? e.expiresAt.toDate() : null;
@@ -88,12 +92,19 @@ export function ProProvider({ children }: { children: ReactNode }) {
   const state = useMemo<ProState>(() => {
     const ownPlan: PaidPlan | null = entActive(ownEnt) ? (ownEnt.plan === 'family' ? 'family' : 'pro') : null;
     const viaFamily = !!householdId && entActive(famEnt) && famEnt.plan === 'family';
-    const plan: Plan = ownPlan ?? (viaFamily ? 'family' : 'free');
+    const betaPro = BETA_PRO && !!user && !ownPlan && !viaFamily;
+    const plan: Plan = ownPlan ?? (viaFamily ? 'family' : betaPro ? 'pro' : 'free');
     const expTs = ownPlan ? ownEnt.expiresAt : viaFamily ? famEnt.expiresAt : null;
     const aiLimit = LIMITS[plan].aiPerMonth;
     return {
       user, loading: !(ownLoaded && memLoaded), plan, isPro: plan !== 'free',
-      source: ownPlan ? ((ownEnt.source as Source) ?? 'comp') : viaFamily ? 'family' : 'none',
+      source: ownPlan
+       ? ((ownEnt.source as Source) ?? 'comp')
+       : viaFamily
+        ? 'family'
+        : betaPro
+          ? 'beta'
+          : 'none',
       expiresAt: expTs instanceof Timestamp ? expTs.toDate() : null,
       isFamilyOwner: ownPlan === 'family',
       isFamilyMember: !ownPlan && viaFamily,
