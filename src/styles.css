@@ -1,4 +1,4 @@
-/* Piper build pass24-20261123 */
+/* Piper build pass25-20261124 */
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Manrope:wght@400;500;600;700;800&display=swap');
 :root {
   --safe-top: env(safe-area-inset-top, 0px);
@@ -748,3 +748,20 @@ button.danger:disabled{opacity:.5}
 .trial-banner small{color:#7a5a44;line-height:1.4}
 .trial-banner .primary{flex:none}
 .trial-banner .primary svg{width:17px;height:17px}
+/* ===== Pass 25: nutrition ===== */
+.scales .nutr-btn{margin-left:12px;background:#f4f7f0;border-color:#b9c8b2;color:var(--sage);font-weight:800}
+.scales .nutr-btn.has{background:#eaf3e4;border-color:#9fb894}
+@media(max-width:420px){.scales .nutr-btn{margin-left:4px}}
+.nutr-card{max-width:520px}
+.nutr-flag{margin:0 0 12px;padding:10px 12px;border-radius:12px;font-size:.86rem;line-height:1.4}
+.nutr-flag.ai{background:#fbf3dc;border:1px solid #edda8c;color:#6e5b18}
+.nutr-flag.site{background:#eaf3e4;border:1px solid #c6d8bd;color:#35572f}
+.nutr-table{width:100%;border-collapse:collapse;margin:4px 0 10px;font-variant-numeric:tabular-nums}
+.nutr-table th,.nutr-table td{padding:9px 6px;border-bottom:1px solid #eee;text-align:right;font-size:.92rem}
+.nutr-table thead th{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:#7a8473}
+.nutr-table th[scope=row]{text-align:left;font-weight:700;color:var(--char)}
+.nutr-table tbody tr:first-child th,.nutr-table tbody tr:first-child td{font-size:1.05rem;font-weight:800}
+.nutr-empty{display:grid;gap:4px;margin:4px 0 14px;padding:14px;border:1px dashed #c9cfc4;border-radius:14px;background:#fafaf6;color:#5d655a}
+.nutr-empty b{color:var(--char)}
+.nutr-card .secondary.wide{margin-bottom:8px}
+.nutr-foot{display:block;color:#7a8473!important;line-height:1.4}
