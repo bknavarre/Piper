@@ -1,4 +1,4 @@
-/* Piper build pass23b-20261120 */
+/* Piper build pass24-20261123 */
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Manrope:wght@400;500;600;700;800&display=swap');
 :root {
   --safe-top: env(safe-area-inset-top, 0px);
@@ -724,3 +724,27 @@ button.danger:disabled{opacity:.5}
 .delete-account-btn{margin-top:6px;color:#983f36!important;border-color:#d9aaa5!important;background:#fff5f3!important}
 .delete-account-btn:hover{background:#fbe8e5!important}
 .delete-account-btn svg{width:18px;height:18px}
+/* ===== Pass 24: one focus, smarter Discover, trial recipes, swaps ===== */
+.smart-autofill .focus-pair.single{display:flex;grid-template-columns:1fr}
+.smart-autofill .focus-pair.single label{flex:1;min-width:180px}
+@media(max-width:800px){.smart-autofill .focus-pair.single{display:grid;grid-template-columns:1fr}}
+.discover-focus.single button{min-height:40px}
+.discover-because{margin:-8px 0 16px;color:var(--sage);font-weight:700;font-size:.92rem}
+.close-head{margin:22px 0 4px;font-family:Manrope,system-ui,sans-serif;font-size:.85rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#7a6a2a}
+.web-recipe-result.close{border-style:dashed;background:#fffdf7}
+.fit-badge{display:inline-block;margin:2px 6px 6px 0;padding:4px 10px;border-radius:999px;font-size:.78rem;font-weight:800}
+.fit-badge.exact{background:#eaf3e4;color:#35572f}
+.fit-badge.close{background:#fbf3dc;color:#7a5d10}
+.fit-note{display:flex;align-items:flex-start;gap:6px;margin:4px 0;padding:7px 10px;border-radius:10px;font-size:.8rem;line-height:1.35}
+.fit-note svg{width:14px;height:14px;flex:none;margin-top:1px}
+.fit-note.avoid{background:#fff8dc;color:#725e16;border:1px solid #edda8c}
+.fit-note.allergy{background:#fff0ed;color:#913b32;border:1px solid #ebc0ba}
+.swap-tip{display:block;margin-top:4px;font-weight:600;opacity:.9}
+.trial-chip{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;background:#f6e6dc;color:#9a4a26;font-style:normal;font-size:9px;font-weight:800;letter-spacing:.03em;vertical-align:1px}
+.meal-choice .trial-keep{color:var(--sage)!important;width:26px;height:26px;border-radius:50%;background:#eef3e9!important;display:grid;place-items:center;flex:none}
+.meal-choice .trial-keep svg{width:14px;height:14px}
+.trial-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 14px;padding:12px 14px;border-radius:14px;background:#fdf3ea;border:1px solid #efd3bf;color:#5f3a22}
+.trial-banner span{display:grid;gap:2px;flex:1 1 240px}
+.trial-banner small{color:#7a5a44;line-height:1.4}
+.trial-banner .primary{flex:none}
+.trial-banner .primary svg{width:17px;height:17px}
