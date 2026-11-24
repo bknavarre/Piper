@@ -1,4 +1,4 @@
-/* Piper build pass26-20261124 */
+/* Piper build pass27-20261124 */
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Manrope:wght@400;500;600;700;800&display=swap');
 :root {
   --safe-top: env(safe-area-inset-top, 0px);
@@ -799,3 +799,32 @@ button.danger:disabled{opacity:.5}
 .line-add svg{width:18px;height:18px}
 .editor-save{position:sticky;bottom:calc(0px + var(--safe-bottom));display:grid;grid-template-columns:1fr 2fr;gap:10px;margin-top:22px;padding:12px 0 calc(6px + var(--safe-bottom));background:linear-gradient(to top,var(--cream) 75%,rgba(252,250,247,0))}
 @media(max-width:520px){.line-tools button{width:30px;height:30px}.line-row{padding-left:8px;gap:6px}}
+/* ===== Pass 27: fridge / pantry scan ===== */
+.scan-kitchen-btn{flex:none;white-space:nowrap}
+.scan-kitchen-btn svg{width:18px;height:18px}
+.chef-scan-link{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:10px 0 0;padding:10px 12px;border:1px dashed rgba(255,255,255,.5);border-radius:12px;background:transparent;color:#fff;font-weight:800;font-size:.9rem}
+.chef-scan-link svg{width:18px;height:18px}
+.chef-scan-link:hover{background:rgba(255,255,255,.1)}
+.kitchen-scan{max-width:560px}
+.ks-shots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:4px 0 12px}
+.ks-shot{position:relative;aspect-ratio:1;border-radius:14px;overflow:hidden;background:#eee}
+.ks-shot img{width:100%;height:100%;object-fit:cover}
+.ks-shot button{position:absolute;top:6px;right:6px;width:30px;height:30px;border:0;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;display:grid;place-items:center}
+.ks-shot button svg{width:16px;height:16px}
+.ks-add{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border:1.5px dashed #b9c2b4;border-radius:14px;background:#f7f8f4;color:var(--sage);font-weight:800;font-size:.82rem}
+.ks-add svg{width:26px;height:26px}
+.ks-count{display:flex;justify-content:space-between;align-items:center;margin:0 0 8px}
+.ks-list{list-style:none;margin:0 0 10px;padding:0;display:grid;gap:6px;max-height:42vh;overflow:auto}
+.ks-list li{display:flex;align-items:center;gap:8px;padding:4px 6px 4px 10px;border:1px solid var(--line);border-radius:12px;background:#fff;opacity:.55}
+.ks-list li.on{opacity:1;border-color:#c9d6c0}
+.ks-list input[type=checkbox]{width:20px!important;height:20px;flex:none;accent-color:var(--sage);margin:0}
+.modal-card .ks-list .ks-name{flex:1;min-width:0;border:0;padding:8px 4px;background:transparent;font-weight:700}
+.ks-list li>button{border:0;background:transparent;color:#9a9a92;width:34px;height:34px;display:grid;place-items:center;flex:none}
+.ks-new{margin:0 0 12px}
+.ks-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+.ks-actions button{min-height:48px}
+.ks-actions svg{width:18px;height:18px}
+.ks-chef{min-height:46px;margin-bottom:4px}
+.ks-makes{max-height:46vh}
+.ks-have{color:var(--sage)!important;font-weight:800}
+@media(max-width:440px){.ks-actions{grid-template-columns:1fr}}
