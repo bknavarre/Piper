@@ -1,4 +1,4 @@
-/* Piper build pass25-20261124 */
+/* Piper build pass26-20261124 */
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Manrope:wght@400;500;600;700;800&display=swap');
 :root {
   --safe-top: env(safe-area-inset-top, 0px);
@@ -765,3 +765,37 @@ button.danger:disabled{opacity:.5}
 .nutr-empty b{color:var(--char)}
 .nutr-card .secondary.wide{margin-bottom:8px}
 .nutr-foot{display:block;color:#7a8473!important;line-height:1.4}
+/* ===== Pass 26: Planner picker filters ===== */
+.picker-chips{display:flex;gap:6px;overflow-x:auto;margin:-4px 0 6px;padding:2px 2px 8px;-webkit-overflow-scrolling:touch}
+.picker-chips button{flex:none;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:#fff;border-radius:999px;min-height:38px;padding:6px 12px;font-size:.85rem;font-weight:700;color:#4b5545}
+.picker-chips button em{font-style:normal;font-size:.72rem;font-weight:800;background:#f1f0ea;color:#6a7465;border-radius:999px;padding:1px 7px}
+.picker-chips button.on{background:var(--sage);border-color:var(--sage);color:#fff}
+.picker-chips button.on em{background:rgba(255,255,255,.22);color:#fff}
+.picker-sort-note{margin:0 0 10px;color:#7a8473;font-size:.8rem}
+/* ===== Pass 26: recipe editor, one box per line ===== */
+.edit-meta{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+.edit-meta label{margin:13px 0 0!important}
+.edit-meta input{margin-top:6px}
+.line-list{margin:20px 0 6px}
+.line-list-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.line-list-head label{margin:0!important}
+.line-list-head small{color:#7a8473;font-weight:700}
+.line-list ol{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:8px}
+.line-row{display:flex;align-items:flex-start;gap:8px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:6px 6px 6px 10px;transition:border-color .15s,box-shadow .15s}
+.line-row:focus-within{border-color:#9fb894;box-shadow:0 0 0 3px rgba(85,98,79,.14)}
+.line-num{flex:none;width:26px;height:26px;margin-top:7px;border-radius:50%;background:var(--sand);color:var(--sage);display:grid;place-items:center;font-size:.8rem}
+.editor .line-row textarea{flex:1;min-width:0;min-height:0!important;margin:0!important;padding:8px 2px!important;border:0!important;background:transparent!important;resize:none;line-height:1.4;font-size:1rem;field-sizing:content}
+.editor .line-row textarea:focus-visible{outline:0}
+.line-tools{flex:none;display:flex;align-items:center;gap:2px;margin-top:2px}
+.line-tools button{width:34px;height:34px;border:0;border-radius:10px;background:transparent;color:#8a9284;display:grid;place-items:center;padding:0}
+.line-tools button:not(:disabled):hover{background:#f1f3ed}
+.line-tools button:disabled{opacity:.25}
+.line-tools svg{width:17px;height:17px}
+.line-tools svg.up{transform:rotate(90deg)}
+.line-tools svg.down{transform:rotate(90deg)}
+.line-tools .line-del{color:#b06a5f}
+.line-tools .line-del:hover{background:#fff0ed!important}
+.line-add{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin-top:8px;min-height:44px;border:1.5px dashed #b9c2b4;border-radius:14px;background:#f7f8f4;color:var(--sage);font-weight:800}
+.line-add svg{width:18px;height:18px}
+.editor-save{position:sticky;bottom:calc(0px + var(--safe-bottom));display:grid;grid-template-columns:1fr 2fr;gap:10px;margin-top:22px;padding:12px 0 calc(6px + var(--safe-bottom));background:linear-gradient(to top,var(--cream) 75%,rgba(252,250,247,0))}
+@media(max-width:520px){.line-tools button{width:30px;height:30px}.line-row{padding-left:8px;gap:6px}}
